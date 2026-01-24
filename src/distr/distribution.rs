@@ -9,7 +9,7 @@
 
 //! Distribution trait and associates
 
-use crate::Rng;
+use crate::{Rng, RngExt};
 #[cfg(feature = "alloc")]
 use alloc::string::String;
 use core::iter;
@@ -17,7 +17,7 @@ use core::iter;
 /// Types (distributions) that can be used to create a random instance of `T`.
 ///
 /// It is possible to sample from a distribution through both the
-/// `Distribution` and [`Rng`] traits, via `distr.sample(&mut rng)` and
+/// `Distribution` and [`RngExt`] traits, via `distr.sample(&mut rng)` and
 /// `rng.sample(distr)`. They also both offer the [`sample_iter`] method, which
 /// produces an iterator that samples from the distribution.
 ///
@@ -71,7 +71,7 @@ pub trait Distribution<T> {
     /// ```
     fn sample_iter<R>(self, rng: R) -> Iter<Self, R, T>
     where
-        R: Rng,
+        R: RngExt,
         Self: Sized,
     {
         Iter {
@@ -119,7 +119,7 @@ impl<T, D: Distribution<T> + ?Sized> Distribution<T> for &D {
 /// from a random generator of type `R`.
 ///
 /// Construct this `struct` using [`Distribution::sample_iter`] or
-/// [`Rng::sample_iter`]. It is also used by [`Rng::random_iter`] and
+/// [`RngExt::sample_iter`]. It is also used by [`RngExt::random_iter`] and
 /// [`crate::random_iter`].
 #[derive(Debug)]
 pub struct Iter<D, R, T> {
@@ -131,7 +131,7 @@ pub struct Iter<D, R, T> {
 impl<D, R, T> Iterator for Iter<D, R, T>
 where
     D: Distribution<T>,
-    R: Rng,
+    R: RngExt,
 {
     type Item = T;
 
@@ -151,7 +151,7 @@ where
 impl<D, R, T> iter::FusedIterator for Iter<D, R, T>
 where
     D: Distribution<T>,
-    R: Rng,
+    R: RngExt,
 {
 }
 
@@ -203,7 +203,7 @@ pub trait SampleString {
 
 #[cfg(test)]
 mod tests {
-    use crate::Rng;
+    use crate::RngExt;
     use crate::distr::{Distribution, Uniform};
 
     #[test]
@@ -230,7 +230,9 @@ mod tests {
 
     #[test]
     fn test_make_an_iter() {
-        fn ten_dice_rolls_other_than_five<R: Rng>(rng: &mut R) -> impl Iterator<Item = i32> + '_ {
+        fn ten_dice_rolls_other_than_five<R: RngExt>(
+            rng: &mut R,
+        ) -> impl Iterator<Item = i32> + '_ {
             Uniform::new_inclusive(1, 6)
                 .unwrap()
                 .sample_iter(rng)
