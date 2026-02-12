@@ -47,11 +47,6 @@
 #![deny(missing_debug_implementations)]
 #![doc(test(attr(allow(unused_variables), deny(warnings))))]
 #![no_std]
-#![cfg_attr(feature = "simd_support", feature(portable_simd))]
-#![cfg_attr(
-    all(feature = "simd_support", target_feature = "avx512bw"),
-    feature(stdarch_x86_avx512)
-)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![allow(
     clippy::float_cmp,

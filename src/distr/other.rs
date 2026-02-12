@@ -19,10 +19,10 @@ use crate::distr::SampleString;
 use crate::distr::{Distribution, StandardUniform, Uniform};
 use crate::{Rng, RngExt};
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 use core::simd::MaskElement;
-#[cfg(feature = "simd_support")]
-use core::simd::prelude::*;
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+use core::simd::{LaneCount, Mask, Simd, SupportedLaneCount, cmp::SimdPartialOrd};
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 
@@ -230,10 +230,11 @@ impl Distribution<bool> for StandardUniform {
 ///
 /// [`_mm_blendv_epi8`]: https://www.intel.com/content/www/us/en/docs/intrinsics-guide/index.html#text=_mm_blendv_epi8&ig_expand=514/
 /// [`simd_support`]: https://github.com/rust-random/rand#crate-features
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 impl<T, const LANES: usize> Distribution<Mask<T, LANES>> for StandardUniform
 where
     T: MaskElement + Default,
+    LaneCount<LANES>: SupportedLaneCount,
     StandardUniform: Distribution<Simd<T, LANES>>,
     Simd<T, LANES>: SimdPartialOrd<Mask = Mask<T, LANES>>,
 {

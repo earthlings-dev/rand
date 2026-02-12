@@ -8,10 +8,12 @@
 
 //! Math helper functions
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 use core::simd::SimdElement;
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 use core::simd::prelude::*;
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+use core::simd::{LaneCount, SupportedLaneCount};
 
 pub(crate) trait WideningMultiply<RHS = Self> {
     type Output;
@@ -144,7 +146,7 @@ wmul_impl_usize! { u32 }
 #[cfg(target_pointer_width = "64")]
 wmul_impl_usize! { u64 }
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 mod simd_wmul {
     use super::*;
     #[cfg(target_arch = "x86")]
@@ -334,10 +336,13 @@ macro_rules! scalar_float_impl {
 scalar_float_impl!(f32, u32);
 scalar_float_impl!(f64, u64);
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 macro_rules! simd_impl {
     ($fty:ident, $uty:ident) => {
-        impl<const LANES: usize> FloatSIMDUtils for Simd<$fty, LANES> {
+        impl<const LANES: usize> FloatSIMDUtils for Simd<$fty, LANES>
+        where
+            LaneCount<LANES>: SupportedLaneCount,
+        {
             type Mask = Mask<<$fty as SimdElement>::Mask, LANES>;
             type UInt = Simd<$uty, LANES>;
 
@@ -370,7 +375,7 @@ macro_rules! simd_impl {
                 // value representable by $fty. This works even when the
                 // current value is infinity.
                 debug_assert!(mask.any(), "At least one lane must be set");
-                Self::from_bits(self.to_bits() + mask.to_simd().cast())
+                Self::from_bits(self.to_bits() + mask.to_int().cast())
             }
 
             #[inline]
@@ -380,7 +385,10 @@ macro_rules! simd_impl {
         }
 
         #[cfg(test)]
-        impl<const LANES: usize> FloatSIMDScalarUtils for Simd<$fty, LANES> {
+        impl<const LANES: usize> FloatSIMDScalarUtils for Simd<$fty, LANES>
+        where
+            LaneCount<LANES>: SupportedLaneCount,
+        {
             type Scalar = $fty;
 
             #[inline]
@@ -397,7 +405,7 @@ macro_rules! simd_impl {
     };
 }
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 simd_impl!(f32, u32);
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 simd_impl!(f64, u64);

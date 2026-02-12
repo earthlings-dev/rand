@@ -10,11 +10,11 @@
 
 use crate::distr::{Distribution, StandardUniform};
 use crate::{Rng, RngExt};
-#[cfg(all(target_arch = "x86", feature = "simd_support"))]
+#[cfg(all(target_arch = "x86", all(feature = "simd_support", rand_nightly_simd)))]
 use core::arch::x86::__m512i;
 #[cfg(target_arch = "x86")]
 use core::arch::x86::{__m128i, __m256i};
-#[cfg(all(target_arch = "x86_64", feature = "simd_support"))]
+#[cfg(all(target_arch = "x86_64", all(feature = "simd_support", rand_nightly_simd)))]
 use core::arch::x86_64::__m512i;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::{__m128i, __m256i};
@@ -22,8 +22,8 @@ use core::num::{
     NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI128, NonZeroU8, NonZeroU16, NonZeroU32,
     NonZeroU64, NonZeroU128,
 };
-#[cfg(feature = "simd_support")]
-use core::simd::*;
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+use core::simd::{LaneCount, Simd, SupportedLaneCount, prelude::*};
 
 impl Distribution<u8> for StandardUniform {
     #[inline]
@@ -138,7 +138,7 @@ impl Distribution<__m256i> for StandardUniform {
 
 #[cfg(all(
     any(target_arch = "x86", target_arch = "x86_64"),
-    feature = "simd_support"
+    all(feature = "simd_support", rand_nightly_simd)
 ))]
 impl Distribution<__m512i> for StandardUniform {
     #[inline]
@@ -152,14 +152,17 @@ impl Distribution<__m512i> for StandardUniform {
     }
 }
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 macro_rules! simd_impl {
     ($($ty:ty),+) => {$(
         /// Requires nightly Rust and the [`simd_support`] feature
         ///
         /// [`simd_support`]: https://github.com/rust-random/rand#crate-features
-        #[cfg(feature = "simd_support")]
-        impl<const LANES: usize> Distribution<Simd<$ty, LANES>> for StandardUniform {
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
+        impl<const LANES: usize> Distribution<Simd<$ty, LANES>> for StandardUniform
+        where
+            LaneCount<LANES>: SupportedLaneCount,
+        {
             #[inline]
             fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Simd<$ty, LANES> {
                 let mut vec = Simd::default();
@@ -170,7 +173,7 @@ macro_rules! simd_impl {
     )+};
 }
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 simd_impl!(u8, i8, u16, i16, u32, i32, u64, i64);
 
 #[cfg(test)]
@@ -201,7 +204,7 @@ mod tests {
 
         rng.sample::<__m128i, _>(StandardUniform);
         rng.sample::<__m256i, _>(StandardUniform);
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         rng.sample::<__m512i, _>(StandardUniform);
     }
 
@@ -242,7 +245,7 @@ mod tests {
         test_samples(0i8, &[9, -9, 111]);
         // Skip further i* types: they are simple reinterpretation of u* samples
 
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         {
             // We only test a sub-set of types here and make assumptions about the rest.
 

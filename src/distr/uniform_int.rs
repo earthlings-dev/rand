@@ -11,12 +11,15 @@
 
 use super::{Error, SampleBorrow, SampleUniform, UniformSampler};
 use crate::distr::utils::WideningMultiply;
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 use crate::distr::{Distribution, StandardUniform};
 use crate::{Rng, RngExt};
 
-#[cfg(feature = "simd_support")]
-use core::simd::{Select, prelude::*};
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+use core::simd::{
+    LaneCount, Simd, SupportedLaneCount, cmp::SimdPartialOrd, num::{SimdInt, SimdUint},
+    prelude::*,
+};
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
@@ -269,7 +272,7 @@ uniform_int_impl! { u32, u32, u32 }
 uniform_int_impl! { u64, u64, u64 }
 uniform_int_impl! { u128, u128, u128 }
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 macro_rules! uniform_simd_int_impl {
     ($ty:ident, $unsigned:ident) => {
         // The "pick the largest zone that can fit in an `u32`" optimization
@@ -278,9 +281,10 @@ macro_rules! uniform_simd_int_impl {
         // is generally a bad idea for SIMD performance. The user can still
         // implement it manually.
 
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         impl<const LANES: usize> SampleUniform for Simd<$ty, LANES>
         where
+            LaneCount<LANES>: SupportedLaneCount,
             Simd<$unsigned, LANES>:
                 WideningMultiply<Output = (Simd<$unsigned, LANES>, Simd<$unsigned, LANES>)>,
             StandardUniform: Distribution<Simd<$unsigned, LANES>>,
@@ -288,9 +292,10 @@ macro_rules! uniform_simd_int_impl {
             type Sampler = UniformInt<Simd<$ty, LANES>>;
         }
 
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         impl<const LANES: usize> UniformSampler for UniformInt<Simd<$ty, LANES>>
         where
+            LaneCount<LANES>: SupportedLaneCount,
             Simd<$unsigned, LANES>:
                 WideningMultiply<Output = (Simd<$unsigned, LANES>, Simd<$unsigned, LANES>)>,
             StandardUniform: Distribution<Simd<$unsigned, LANES>>,
@@ -383,7 +388,7 @@ macro_rules! uniform_simd_int_impl {
     };
 }
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 uniform_simd_int_impl! { (u8, i8), (u16, i16), (u32, i32), (u64, i64) }
 
 /// The back-end implementing [`UniformSampler`] for `usize`.
@@ -675,7 +680,7 @@ mod tests {
         }
         t!(i8, i16, i32, i64, i128, u8, u16, u32, u64, usize, u128);
 
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         {
             t!(u8x4, u8x8, u8x16, u8x32, u8x64 => u8);
             t!(i8x4, i8x8, i8x16, i8x32, i8x64 => i8);
@@ -786,7 +791,7 @@ mod tests {
         test_samples(11u128, 218, 219, &[181, 127, 139, 167, 141, 197]);
         test_samples(11usize, 218, 219, &[17, 66, 214, 181, 93, 165]);
 
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         {
             let lb = Simd::from([11u8, 0, 128, 127]);
             let ub = Simd::from([218, 254, 254, 254]);

@@ -14,7 +14,7 @@ use crate::distr::float::IntoFloat;
 use crate::distr::utils::{BoolAsSIMD, FloatAsSIMD, FloatSIMDUtils, IntAsSIMD};
 use crate::{Rng, RngExt};
 
-#[cfg(feature = "simd_support")]
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
 use core::simd::prelude::*;
 
 #[cfg(feature = "serde")]
@@ -197,21 +197,21 @@ macro_rules! uniform_float_impl {
 uniform_float_impl! { , f32, u32, f32, u32, 32 - 23 }
 uniform_float_impl! { , f64, u64, f64, u64, 64 - 52 }
 
-#[cfg(feature = "simd_support")]
-uniform_float_impl! { feature = "simd_support", f32x2, u32x2, f32, u32, 32 - 23 }
-#[cfg(feature = "simd_support")]
-uniform_float_impl! { feature = "simd_support", f32x4, u32x4, f32, u32, 32 - 23 }
-#[cfg(feature = "simd_support")]
-uniform_float_impl! { feature = "simd_support", f32x8, u32x8, f32, u32, 32 - 23 }
-#[cfg(feature = "simd_support")]
-uniform_float_impl! { feature = "simd_support", f32x16, u32x16, f32, u32, 32 - 23 }
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+uniform_float_impl! { all(feature = "simd_support", rand_nightly_simd), f32x2, u32x2, f32, u32, 32 - 23 }
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+uniform_float_impl! { all(feature = "simd_support", rand_nightly_simd), f32x4, u32x4, f32, u32, 32 - 23 }
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+uniform_float_impl! { all(feature = "simd_support", rand_nightly_simd), f32x8, u32x8, f32, u32, 32 - 23 }
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+uniform_float_impl! { all(feature = "simd_support", rand_nightly_simd), f32x16, u32x16, f32, u32, 32 - 23 }
 
-#[cfg(feature = "simd_support")]
-uniform_float_impl! { feature = "simd_support", f64x2, u64x2, f64, u64, 64 - 52 }
-#[cfg(feature = "simd_support")]
-uniform_float_impl! { feature = "simd_support", f64x4, u64x4, f64, u64, 64 - 52 }
-#[cfg(feature = "simd_support")]
-uniform_float_impl! { feature = "simd_support", f64x8, u64x8, f64, u64, 64 - 52 }
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+uniform_float_impl! { all(feature = "simd_support", rand_nightly_simd), f64x2, u64x2, f64, u64, 64 - 52 }
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+uniform_float_impl! { all(feature = "simd_support", rand_nightly_simd), f64x4, u64x4, f64, u64, 64 - 52 }
+#[cfg(all(feature = "simd_support", rand_nightly_simd))]
+uniform_float_impl! { all(feature = "simd_support", rand_nightly_simd), f64x8, u64x8, f64, u64, 64 - 52 }
 
 #[cfg(test)]
 mod tests {
@@ -345,7 +345,7 @@ mod tests {
 
         t!(f32, f32, 32 - 23);
         t!(f64, f64, 64 - 52);
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         {
             t!(f32x2, f32, 32 - 23);
             t!(f32x4, f32, 32 - 23);
@@ -409,7 +409,7 @@ mod tests {
 
         t!(f32, f32);
         t!(f64, f64);
-        #[cfg(feature = "simd_support")]
+        #[cfg(all(feature = "simd_support", rand_nightly_simd))]
         {
             t!(f32x2, f32);
             t!(f32x4, f32);
