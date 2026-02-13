@@ -11,7 +11,7 @@ simd_support = ["rand/simd_support"]
 [workspace]
 
 [dev-dependencies]
-rand = { path = ".." }
+rand = { version = "0.10.0", path = ".." }
 rand_pcg = "0.10"
 chacha20 = { version = "0.10.0", default-features = false, features = ["rng"] }
 criterion = "0.5"
