@@ -176,9 +176,10 @@ impl<X: SampleUniform + PartialOrd> WeightedIndex<X> {
         let mut prev_i = None;
         for &(i, w) in new_weights {
             if let Some(old_i) = prev_i
-                && old_i >= i {
-                    return Err(Error::InvalidInput);
-                }
+                && old_i >= i
+            {
+                return Err(Error::InvalidInput);
+            }
             if !(*w >= zero) {
                 return Err(Error::InvalidWeight);
             }

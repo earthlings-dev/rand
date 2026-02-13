@@ -14,7 +14,10 @@ use crate::{Rng, RngExt};
 use core::arch::x86::__m512i;
 #[cfg(target_arch = "x86")]
 use core::arch::x86::{__m128i, __m256i};
-#[cfg(all(target_arch = "x86_64", all(feature = "simd_support", rand_nightly_simd)))]
+#[cfg(all(
+    target_arch = "x86_64",
+    all(feature = "simd_support", rand_nightly_simd)
+))]
 use core::arch::x86_64::__m512i;
 #[cfg(target_arch = "x86_64")]
 use core::arch::x86_64::{__m128i, __m256i};

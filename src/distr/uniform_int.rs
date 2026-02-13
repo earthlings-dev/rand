@@ -17,7 +17,9 @@ use crate::{Rng, RngExt};
 
 #[cfg(all(feature = "simd_support", rand_nightly_simd))]
 use core::simd::{
-    LaneCount, Simd, SupportedLaneCount, cmp::SimdPartialOrd, num::{SimdInt, SimdUint},
+    LaneCount, Simd, SupportedLaneCount,
+    cmp::SimdPartialOrd,
+    num::{SimdInt, SimdUint},
     prelude::*,
 };
 
